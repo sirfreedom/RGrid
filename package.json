@@ -26,7 +26,7 @@
     "yarn": "^1.22.21"
   },
   "scripts": {
-    "start": "react-scripts start --reset-cache",
+    "start": "react-scripts --openssl-legacy-provider start --reset-cache",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
