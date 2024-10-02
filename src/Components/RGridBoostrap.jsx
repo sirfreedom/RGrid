@@ -5,13 +5,13 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import * as lodash from 'lodash'
 
-const RGrid = props => {
-  const [Rows, setRows] = useState([]); //rows en general ya ordenadas
-  const [rowsPerPage, setRowsPerPage] = useState(10); //rows por pagina
-  const [actualPageIndex, setActualPageIndex] = useState(1); //en que pagina estoy
-  const [TotalPages, setTotalPages] = useState(0); // manejador de paginas
-  const [ColSpanGrid, setColSpanGrid] = useState(1); // seteo si existe las columnas edit y delete
-  const [UniqueOrdering,setUniqueOrdering] = useState(false); // necesito ordenar los rows una sola vez.
+const RGridBoostrap = props => {
+  const [Rows, setRows] = useState([]);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [actualPageIndex, setActualPageIndex] = useState(1);
+  const [TotalPages, setTotalPages] = useState(0);
+  const [ColSpanGrid, setColSpanGrid] = useState(1);
+  const [UniqueOrdering,setUniqueOrdering] = useState(false);
 
   const handleExportar = e => {
     const doc = new jsPDF();
@@ -367,4 +367,4 @@ const setColSpan = () => {
   );
 };
 
-export default RGrid;
+export default RGridBoostrap;

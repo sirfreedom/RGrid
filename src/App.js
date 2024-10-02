@@ -1,28 +1,28 @@
 import './Css/App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import React, {useState,useEffect} from 'react';
-import RGrid from './Components/RGrid'
+import RGrid from './Components/RGridTemp'
 import {ListAll} from './Components/Helpers'
-import {GetDog} from './Components/Helpers'
+
 
 
 const GrillaConfiguracion = [
   {
     Tittle: 'Id',
     Selector: fila => fila.id,
-    WidthColumn: '30%',
+    WidthColumn: '20%',
   },
   {
     Tittle: 'Nombre',
     Selector: fila => fila.name,
-    WidthColumn: '30%',
+    WidthColumn: '40%',
     Ordenable: true,
     ColumnOrdenable: 'name',
   },
   {
-    Tittle: 'Tamaño',
+    Tittle: 'Grupo',
     Selector: fila => fila.breed_group,
-    WidthColumn: '30%',
+    WidthColumn: '40%',
     Ordenable: true,
     ColumnOrdenable: 'breed_group'
   }
@@ -50,12 +50,9 @@ function App() {
       setDogs(lDog);
     });
   }, []);
-  
-  useEffect(() => {
-  GetDog(DogId).then(oDog => {
-    setDog(oDog);
-  });
-  }, [DogId]);
+
+ 
+
 
  return (
     <>
@@ -70,11 +67,18 @@ function App() {
               rows={Dogs}
               columns={GrillaConfiguracion}
               ShowDelete="true"
+              ShowEdit="true"
               Export="true"
+              TotalWidth="50%"
               DeleteId={id => console.log(id)}
+              EditId={id => console.log(id)}
               isLoading={isCargando}
               ConfigurationId="id"
             />
+
+
+
+
     </>
   );
 }

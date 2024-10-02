@@ -5,7 +5,7 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import * as lodash from 'lodash'
 
-const RGrid = props => {
+const RGridTemp = props => {
   const [Rows, setRows] = useState([]); //rows en general ya ordenadas
   const [rowsPerPage, setRowsPerPage] = useState(10); //rows por pagina
   const [actualPageIndex, setActualPageIndex] = useState(1); //en que pagina estoy
@@ -367,4 +367,4 @@ const setColSpan = () => {
   );
 };
 
-export default RGrid;
+export default RGridTemp;

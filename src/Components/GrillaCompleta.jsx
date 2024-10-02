@@ -12,6 +12,9 @@ const GrillaCompleta = () => {
   const [dog, setDog] = useState([]);
   
   const GridEdit = id => {
+
+    console.log(id);
+
     GetDog(id).then(oDog => {
       setDog(oDog);
       setModalEdit(true);
@@ -71,12 +74,14 @@ const GrillaCompleta = () => {
       </table>
 
       <div>
+
         <ModalEdicion
           show={modalEdit}
           onHide={() => setModalEdit(false)}
           dog={dog}
           cbGuardarPerro={SaveDog}
         />
+        
       </div>
     </React.Fragment>
   );
