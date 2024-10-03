@@ -95,7 +95,7 @@ const RGrid = props => {
 
   Object.prototype.renameProperty = function (oldName, newName) {
     // no hacer nada si los nombre son iguales
-    if (oldName == newName) {
+    if (oldName === newName) {
       return this;
     }
     // Verificar si ya existe la propiedad con el nombre nuevo y evitar errores.
@@ -191,6 +191,7 @@ const setColSpan = () => {
 
           <span align="right">
             <select
+              value={rowsPerPage}
               className="Select"
               name="ddlPages"
               id="ddlPages"

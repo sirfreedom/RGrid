@@ -3,15 +3,10 @@ import 'bootstrap/dist/css/bootstrap.css';
 import React, {useState,useEffect} from 'react';
 import RGrid from './Components/RGridTemp'
 import {ListAll} from './Components/Helpers'
-
+import ModalEdicion from './Components/ModalEdicion';
 
 
 const GrillaConfiguracion = [
-  {
-    Tittle: 'Id',
-    Selector: fila => fila.id,
-    WidthColumn: '20%',
-  },
   {
     Tittle: 'Nombre',
     Selector: fila => fila.name,
@@ -25,59 +20,55 @@ const GrillaConfiguracion = [
     WidthColumn: '40%',
     Ordenable: true,
     ColumnOrdenable: 'breed_group'
-  }
+  },
+  {
+    Tittle: 'Vida Promedio',
+    Selector: fila => fila.life_span,
+    WidthColumn: '20%',
+  },
 ];
-
 
 function App() {
 
-  const [Dogs, setDogs] = useState([]);
-  const [isCargando, setIsCargando] = useState(false);
   const [DogId,setDogId] = useState(0);
-  const [Dog,setDog] = useState();
-  const [modalEdit, setModalEdit] = useState(false); // Para el popup de ModalForm
+  const [Dogs, setDogs] = useState([]);
+  const [ShowModalEdit, setShowModalEdit] = useState(false);
 
-  const FindDogs = () => {
-    setIsCargando(true);
-    ListAll().then(lDog => {
-      setDogs(lDog);
-      setIsCargando(false);
-    });
-  }
- 
   useEffect(() => {
     ListAll().then(lDog => {
       setDogs(lDog);
     });
   }, []);
 
- 
-
+  const GridEdit = id => {
+    setShowModalEdit(true);
+    setDogId(id);
+  };
 
  return (
     <>
-            <button key="btnFindTest" id="btnFindTest" onClick={FindDogs}>
-              Ver Perros Test
-            </button>
-
-            <br></br>
             <RGrid
               key="RGrid"
               Tittle="Grilla Dogs Test"
               rows={Dogs}
               columns={GrillaConfiguracion}
-              ShowDelete="true"
-              ShowEdit="true"
-              Export="true"
-              TotalWidth="50%"
+              ShowDelete={true}
+              ShowEdit={true}
+              Export={true}
+              TotalWidth="80%"
               DeleteId={id => console.log(id)}
-              EditId={id => console.log(id)}
-              isLoading={isCargando}
-              ConfigurationId="id"
+              EditId={id => GridEdit(id)}
+              isLoading={false}
+              ConfigurationId="id" //Id de los datos de la grilla
             />
 
-
-
+          <div>
+              <ModalEdicion
+              show={ShowModalEdit}
+              onHide={() => setShowModalEdit(false)}
+              ValueId={DogId}
+             />
+         </div>
 
     </>
   );

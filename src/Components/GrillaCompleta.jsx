@@ -4,7 +4,6 @@ import {GetDog} from './Helpers'
 import {Button} from 'react-bootstrap/'
 import ModalEdicion from './ModalEdicion'
 
-
 const GrillaCompleta = () => {
   const [dogs, setDogs] = useState([]);
   const [modalEdit, setModalEdit] = useState(false);
@@ -78,7 +77,8 @@ const GrillaCompleta = () => {
         <ModalEdicion
           show={modalEdit}
           onHide={() => setModalEdit(false)}
-          dog={dog}
+          //dog={dog}
+          ValueId={dog.id}
           cbGuardarPerro={SaveDog}
         />
         
