@@ -1,9 +1,10 @@
 import './Css/App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import React, {useState,useEffect} from 'react';
-import RGrid from './Components/RGridTemp'
+import RGrid from './Components/RGrid'
 import {ListAll} from './Components/Helpers'
 import ModalEdicion from './Components/ModalEdicion';
+import ModalNew from './Components/ModalNew';
 
 
 const GrillaConfiguracion = [
@@ -33,6 +34,7 @@ function App() {
   const [DogId,setDogId] = useState(0);
   const [Dogs, setDogs] = useState([]);
   const [ShowModalEdit, setShowModalEdit] = useState(false);
+  const [ShowModalNew, setShowModalNew] = useState(false);
 
   useEffect(() => {
     ListAll().then(lDog => {
@@ -45,8 +47,23 @@ function App() {
     setDogId(id);
   };
 
+const GridNew = () => {
+  //console.log("paso");
+  //alert("ssss");
+  setShowModalNew(true);
+  };
+
  return (
     <>
+        <table width="100%" >
+          <tr>
+            <td>
+              <button className="btn-2" onClick={GridNew} >  Nuevo Registro  </button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+
             <RGrid
               key="RGrid"
               Tittle="Grilla Dogs Test"
@@ -56,19 +73,26 @@ function App() {
               ShowEdit={true}
               Export={true}
               TotalWidth="80%"
-              DeleteId={id => console.log(id)}
+              DeleteId={id => alert("not implementes id" + id)}
               EditId={id => GridEdit(id)}
               isLoading={false}
               ConfigurationId="id" //Id de los datos de la grilla
             />
+            </td>
+          </tr>
+          <tr>
+            <td>
+                <ModalEdicion show={ShowModalEdit} onHide={() => setShowModalEdit(false)}  ValueId={DogId} />
+            </td>
+          </tr>
+          <tr>
+            <td>
+                <ModalNew show={ShowModalNew} onHide={() => setShowModalNew(false)}  />
+            </td>
+          </tr>
 
-          <div>
-              <ModalEdicion
-              show={ShowModalEdit}
-              onHide={() => setShowModalEdit(false)}
-              ValueId={DogId}
-             />
-         </div>
+        </table>
+
 
     </>
   );

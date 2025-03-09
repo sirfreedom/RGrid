@@ -7,6 +7,7 @@ import * as lodash from 'lodash'
 
 const RGridTemp = props => {
   const [Rows, setRows] = useState([]); //rows en general ya ordenadas
+  const [RowsFilter,setRowsFilter] = useState([]); //persiste todas las rows para realizar busquedas
   const [rowsPerPage, setRowsPerPage] = useState(10); //rows por pagina
   const [actualPageIndex, setActualPageIndex] = useState(1); //en que pagina estoy
   const [TotalPages, setTotalPages] = useState(0); // manejador de paginas
@@ -53,6 +54,11 @@ const RGridTemp = props => {
 
   const ddlPages_OnChange = value => {
     setRowsPerPage(value);
+  };
+
+  const handleBuscador = e => {
+    //console.log(e.target.value);
+    //const result = words.filter((word) => word.length > 6);
   };
 
   const EnabledPaging = () => {
@@ -174,37 +180,49 @@ const setColSpan = () => {
           ></img>
         </h2>
       ) : (
-        <React.Fragment>
-          {props?.Export && (
-            <span key={'span' + Math.random().toString()}>
-              <button value="csv" className="btn-2" onClick={handleExportar}>
-                CSV
-              </button>
-              <button value="xls" className="btn-2" onClick={handleExportar}>
-                Excel
-              </button>
-              <button value="pdf" className="btn-2" onClick={handleExportar}>
-                PDF
-              </button>
-            </span>
-          )}
 
-          <span align="right">
-            <select
-              value={rowsPerPage}
-              className="Select"
-              name="ddlPages"
-              id="ddlPages"
-              key={'ddlPages' + Math.random().toString() }
-              onChange={e => ddlPages_OnChange(e.target.value)}
-            >
-              <option value="10"> 10 </option>
-              <option value="25"> 25 </option>
-              <option value="50"> 50 </option>
-              <option value="100"> 100 </option>
-              <option value="9999"> All </option>
-            </select>
-          </span>
+        <>
+
+          <table width={props?.TotalWidth} className='Table' align='center' >
+            <tr>
+             <td width="1%"></td>
+              <td>
+                Rows per Page &nbsp; 
+                <span align="right">
+                <select
+                  value={rowsPerPage}
+                  className="Select"
+                  name="ddlPages"
+                  id="ddlPages"
+                  key={'ddlPages' + Math.random().toString() }
+                  onChange={e => ddlPages_OnChange(e.target.value)}
+                 >
+                <option value="10"> 10 </option>
+                <option value="25"> 25 </option>
+                <option value="50"> 50 </option>
+                <option value="100"> 100 </option>
+                <option value="9999"> All </option>
+                </select>
+                </span>
+              </td>
+              <td>
+                {props?.Export && (
+                <span key={'span' + Math.random().toString()}>
+                <button value="csv" className="btn-2" onClick={handleExportar}>
+                CSV
+                </button>
+                <button value="xls" className="btn-2" onClick={handleExportar}>
+                  Excel
+                </button>
+                <button value="pdf" className="btn-2" onClick={handleExportar}>
+                  PDF
+                </button>
+                </span>
+                )}
+              </td>
+             <td width="1%"></td>
+            </tr>
+          </table>
 
           <table width={props?.TotalWidth} border="0" align="center" key={'tTittle' + Math.random().toString() } >
             <tr className="TrTittle" key={'trTittle' + Math.random().toString() } >
@@ -362,7 +380,7 @@ const setColSpan = () => {
               </tr>
             </tfoot>
           </table>
-        </React.Fragment>
+        </>
       )}
     </div>
   );
