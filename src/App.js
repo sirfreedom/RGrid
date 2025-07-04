@@ -1,7 +1,7 @@
 import './Css/App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import React, {useState,useEffect} from 'react';
-import RGrid from './Components/RGrid'
+import RGrid from './Components/RGridBoostrap'
 import {ListAll} from './Components/Helpers'
 import ModalEdicion from './Components/ModalEdicion';
 import ModalNew from './Components/ModalNew';
@@ -55,14 +55,16 @@ const GridNew = () => {
 
  return (
     <>
-        <table width="100%" >
-          <tr>
-            <td>
-              <button className="btn-2" onClick={GridNew} >  Nuevo Registro  </button>
-            </td>
-          </tr>
-          <tr>
-            <td>
+
+        <div className='container-fluid'>
+
+          <div className='row align-items-end'>
+            <div className='col-6'>
+                <button className="btn-2" onClick={GridNew} >  Nuevo Registro  </button>
+            </div>
+          </div>
+          <div className='row align-items-center'>
+            <div className='col-12'>
 
             <RGrid
               key="RGrid"
@@ -78,21 +80,20 @@ const GridNew = () => {
               isLoading={false}
               ConfigurationId="id" //Id de los datos de la grilla
             />
-            </td>
-          </tr>
-          <tr>
-            <td>
-                <ModalEdicion show={ShowModalEdit} onHide={() => setShowModalEdit(false)}  ValueId={DogId} />
-            </td>
-          </tr>
-          <tr>
-            <td>
-                <ModalNew show={ShowModalNew} onHide={() => setShowModalNew(false)}  />
-            </td>
-          </tr>
 
-        </table>
-
+            </div>
+          </div>
+          <div className='row'>
+              <div className='col-12'>
+                  <ModalEdicion show={ShowModalEdit} onHide={() => setShowModalEdit(false)}  ValueId={DogId} />
+              </div>
+          </div>
+          <div className='row'>
+              <div className='col-12'>
+                  <ModalNew show={ShowModalNew} onHide={() => setShowModalNew(false)}  />
+              </div>
+          </div>
+        </div>
 
     </>
   );
