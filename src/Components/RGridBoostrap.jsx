@@ -89,39 +89,26 @@ const RGridBoostrap = props => {
   }, [Rows, rowsPerPage, actualPageIndex]);
 
 
-  Object.prototype.renameProperty = function (oldName, newName) {
-    if (oldName === newName) {
-      return this;
+
+
+
+  
+const ChangeId = () => {
+  try {
+    if (props.rows.length === 0 || UniqueOrdering) {
+      return;
     }
-    if (this.hasOwnProperty(oldName)) {
-      this[newName] = this[oldName];
-    }
-    return this;
-  };
+    setUniqueOrdering(true);
+    const oComplete = props.rows.map(item => {
+      const { [props.ConfigurationId]: RowId, ...rest } = item; // Desestructuramos y renombramos
+      return { RowId, ...rest }; // Creamos un nuevo objeto con la propiedad renombrada
+    });
+    setRows(lodash.sortBy(oComplete, 'RowId'));
+  } catch (e) {
+    console.error("Error in ChangeId:", e.message);
+  }
+};
 
-  const ChangeId = () => {
-    try {
-      if (props.rows.length === 0 || UniqueOrdering) {
-        return;
-      }
-
-      setUniqueOrdering(true);
-      const oComplete = [...props.rows];
-
-      for (const item of oComplete) {
-        // Evitar mutar el prototipo si es posible, o al menos ser consciente de ello.
-        // Una alternativa ser�a:
-        //const newItem = { ...item, ['RowId']: item[props.ConfigurationId] };
-        //delete newItem[props.ConfigurationId];
-        item.renameProperty(props.ConfigurationId, 'RowId');
-      }
-
-      setRows(lodash.sortBy(oComplete, 'RowId'));
-
-    } catch (e) {
-      console.error("Error in ChangeId:", e.message);
-    }
-  };
 
   const HandlerOrderby = (value) => {
     setRows(lodash.sortBy(Rows, value));
