@@ -2,17 +2,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useCallback, useState, useEffect } from 'react';
 import exportFromJSON from 'export-from-json';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable'; // Aunque no se usar� autoTable directamente, jsPDF sigue siendo �til para la exportaci�n
+import 'jspdf-autotable';
 import * as lodash from 'lodash';
 
 const RGridBoostrap = props => {
   const [Rows, setRows] = useState([]);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(props.RowPerPage);
   const [actualPageIndex, setActualPageIndex] = useState(1);
   const [TotalPages, setTotalPages] = useState(0);
   const [UniqueOrdering, setUniqueOrdering] = useState(false);
 
-  
   const totalVisibleColumns = props.columns.length + (props.ShowDelete ? 1 : 0) + (props.ShowEdit ? 1 : 0);
 
   const handleExportar = e => {
@@ -88,27 +87,21 @@ const RGridBoostrap = props => {
     }
   }, [Rows, rowsPerPage, actualPageIndex]);
 
-
-
-
-
-  
-const ChangeId = () => {
-  try {
-    if (props.rows.length === 0 || UniqueOrdering) {
-      return;
+  const ChangeId = () => {
+    try {
+      if (props.rows.length === 0 || UniqueOrdering) {
+        return;
+      }
+      setUniqueOrdering(true);
+      const oComplete = props.rows.map(item => {
+        const { [props.ConfigurationId]: RowId, ...rest } = item;
+        return { RowId, ...rest };
+      });
+      setRows(lodash.sortBy(oComplete, 'RowId'));
+    } catch (e) {
+      console.error("Error in ChangeId:", e.message);
     }
-    setUniqueOrdering(true);
-    const oComplete = props.rows.map(item => {
-      const { [props.ConfigurationId]: RowId, ...rest } = item; // Desestructuramos y renombramos
-      return { RowId, ...rest }; // Creamos un nuevo objeto con la propiedad renombrada
-    });
-    setRows(lodash.sortBy(oComplete, 'RowId'));
-  } catch (e) {
-    console.error("Error in ChangeId:", e.message);
-  }
-};
-
+  };
 
   const HandlerOrderby = (value) => {
     setRows(lodash.sortBy(Rows, value));
@@ -127,35 +120,20 @@ const ChangeId = () => {
     actualPageIndex * rowsPerPage
   );
 
-  // Funci�n para determinar el ancho de las columnas en el sistema de cuadr�cula de Bootstrap
-  // Esto es un ejemplo simple, en un caso real, podr�as necesitar una l�gica m�s sofisticada
-  // para distribuir el ancho de las columnas de forma equitativa o basada en el contenido.
-  const getColumnWidthClass = (columnWidth) => {
-    if (columnWidth) {
-      // Si se proporciona un ancho espec�fico, se puede usar inline style o una clase personalizada
-      // Para Bootstrap, podr�amos intentar mapear a col-X, pero es complejo sin conocer el total.
-      // Por simplicidad, usaremos inline style para anchos espec�ficos.
-      return {}; // Retorna un objeto vac�o para que el estilo se aplique directamente
-    }
-    // Si no hay ancho espec�fico, distribuir equitativamente
-    const baseCol = Math.floor(12 / totalVisibleColumns);
-    return { className: `col-${baseCol}` };
-  };
-
   return (
-    <div className="container-fluid mt-3">
+    <div className="container-fluid p-0"> 
       {props.isLoading ? (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
-          <div className="spinner-border text-primary" role="status">
+          <div className="spinner-border text-primary" role="status"> 
             <span className="visually-hidden">Loading...</span>
           </div>
-          <h2 className="ms-2">Loading...</h2>
+          <h2 className="ms-2 text-primary">Loading...</h2>
         </div>
       ) : (
-        <React.Fragment>
-          <div className="d-flex justify-content-between align-items-center mb-3">
+        <>
+          <div className="d-flex justify-content-between align-items-center mb-2 px-2"> 
             {props?.Export && (
-              <div className="btn-group" role="group" aria-label="Export options">
+              <div className="btn-group btn-group-sm" role="group" aria-label="Export options"> 
                 <button type="button" className="btn btn-outline-primary" value="csv" onClick={handleExportar}>
                   CSV
                 </button>
@@ -169,7 +147,7 @@ const ChangeId = () => {
             )}
 
             <div className="d-flex align-items-center">
-              <label htmlFor="ddlPages" className="form-label me-2 mb-0">Rows per page:</label>
+              <label htmlFor="ddlPages" className="form-label me-1 mb-0 text-muted small">Rows per page:</label> 
               <select
                 value={rowsPerPage}
                 className="form-select form-select-sm"
@@ -178,6 +156,7 @@ const ChangeId = () => {
                 onChange={e => ddlPages_OnChange(e.target.value)}
                 style={{ width: 'auto' }}
               >
+                <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>
                 <option value="50">50</option>
@@ -187,20 +166,16 @@ const ChangeId = () => {
             </div>
           </div>
 
-          <div className="card mb-3">
-            <div className="card-header text-center bg-primary text-white">
-              <h4 className="mb-0">{props.Tittle}</h4>
+          <div className="card border-0 shadow-sm mb-3"> 
+            <div className="card-header bg-primary text-white text-center py-1"> 
+              <h5 className="mb-0">{props.Tittle}</h5> 
             </div>
-          </div>
-
-          <div className="border rounded overflow-hidden"> 
-
-            <div className="d-flex bg-dark text-white fw-bold py-2 px-2"> 
+            <div className="d-flex bg-dark text-white fw-bold py-0 px-0 small"> 
               {props.columns.map((column, idx) => (
                 <div
                   key={`header-col-${idx}`}
-                  className="p-1 text-truncate" 
-                  style={{ width: column.WidthColumn || `${100 / totalVisibleColumns}%` }} 
+                  className="p-1 text-truncate"
+                  style={{ width: column.WidthColumn || `${100 / totalVisibleColumns}%` }}
                 >
                   {column.Tittle}{' '}
                   {column.Ordenable && (
@@ -217,30 +192,29 @@ const ChangeId = () => {
               ))}
 
               {props.ShowDelete && (
-                <div className="p-1 text-center" style={{ width: '60px' }}> 
+                <div className="p-1 text-center" style={{ width: '60px' }}>
                   Delete
                 </div>
               )}
 
               {props.ShowEdit && (
-                <div className="p-1 text-center" style={{ width: '60px' }}> 
+                <div className="p-1 text-center" style={{ width: '60px' }}>
                   Edit
                 </div>
               )}
             </div>
 
-            
-            <div className="list-group list-group-flush"> 
+            <div className="list-group list-group-flush border-0"> {/* Eliminar borde del list-group */}
               {paginatedRows.length > 0 ? (
                 paginatedRows.map((row, idx) => (
                   <div
                     key={`row-${row.RowId || idx}`}
-                    className="list-group-item list-group-item-action d-flex align-items-center" 
+                    className="list-group-item list-group-item-action d-flex align-items-center py-1 px-2 border-0" /* Reducir padding y eliminar bordes */
                   >
                     {props.columns.map((column, colx) => (
                       <div
                         key={`cell-${row.RowId || idx}-${colx}`}
-                        className="p-1 text-truncate"
+                        className="p-1 text-truncate small" /* Reducir padding y tamaño de fuente */
                         style={{ width: column.WidthColumn || `${100 / totalVisibleColumns}%` }}
                       >
                         {column.Selector(row)}
@@ -250,11 +224,11 @@ const ChangeId = () => {
                     {props.ShowDelete && (
                       <div className="p-1 text-center" style={{ width: '60px' }}>
                         <button
-                          className="btn btn-sm btn-danger"
+                          className="btn btn-sm btn-danger py-1 px-1" 
                           onClick={() => props.DeleteId(row.RowId)}
                           title="Delete"
                         >
-                          <i className="bi bi-trash"></i>
+                        Delete
                         </button>
                       </div>
                     )}
@@ -262,40 +236,40 @@ const ChangeId = () => {
                     {props.ShowEdit && (
                       <div className="p-1 text-center" style={{ width: '60px' }}>
                         <button
-                          className="btn btn-sm btn-warning"
+                          className="btn btn-sm btn-warning py-1 px-1" 
                           onClick={() => props.EditId(row.RowId)}
                           title="Edit"
                         >
-                          <i className="bi bi-pencil"></i>
+                          Edit
                         </button>
                       </div>
                     )}
                   </div>
                 ))
               ) : (
-                <div className="list-group-item text-center py-3">
+                <div className="list-group-item text-center py-1"> 
                   No data available.
                 </div>
               )}
             </div>
 
-            <div className="d-flex justify-content-end py-2 px-2 bg-light border-top">
+            <div className="d-flex justify-content-end py-1 px-1"> 
               {EnabledPaging() && (
                 <nav aria-label="Page navigation">
-                  <ul className="pagination justify-content-end mb-0">
+                  <ul className="pagination pagination-sm justify-content-end mb-0"> 
                     <li className={`page-item ${actualPageIndex === 1 ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={PrevPage} disabled={actualPageIndex === 1}>
-                        Previous
+                        Previous Page
                       </button>
                     </li>
                     <li className="page-item disabled">
-                      <span className="page-link">
+                      <span className="page-link text-muted"> 
                         Page {actualPageIndex} / {TotalPages}
                       </span>
                     </li>
                     <li className={`page-item ${actualPageIndex === TotalPages ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={NextPage} disabled={actualPageIndex === TotalPages}>
-                        Next
+                        Next Page
                       </button>
                     </li>
                   </ul>
@@ -303,7 +277,7 @@ const ChangeId = () => {
               )}
             </div>
           </div>
-        </React.Fragment>
+        </>
       )}
     </div>
   );

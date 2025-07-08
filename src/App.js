@@ -70,6 +70,7 @@ const GridNew = () => {
               key="RGrid"
               Tittle="Grilla Dogs Test"
               rows={Dogs}
+              RowPerPage={5}
               columns={GrillaConfiguracion}
               ShowDelete={true}
               ShowEdit={true}
