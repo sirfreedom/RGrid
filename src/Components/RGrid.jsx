@@ -195,6 +195,7 @@ const setColSpan = () => {
               className="Select"
               name="ddlPages"
               id="ddlPages"
+              defaultValue="10"
               key={'ddlPages' + Math.random().toString() }
               onChange={e => ddlPages_OnChange(e.target.value)}
             >

@@ -153,6 +153,7 @@ const RGridBoostrap = props => {
                 className="form-select form-select-sm"
                 name="ddlPages"
                 id="ddlPages"
+                defaultValue="5"
                 onChange={e => ddlPages_OnChange(e.target.value)}
                 style={{ width: 'auto' }}
               >
