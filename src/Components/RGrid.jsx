@@ -1,17 +1,17 @@
 import '../Css/RGrid.css'
-import React, {useCallback, useState, useEffect} from 'react'
+import{ useCallback, useState, useEffect } from 'react';
 import exportFromJSON from 'export-from-json'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
-import * as lodash from 'lodash'
+import * as lodash from 'lodash';
 
 const RGrid = props => {
-  const [Rows, setRows] = useState([]); //rows en general ya ordenadas
-  const [rowsPerPage, setRowsPerPage] = useState(10); //rows por pagina
-  const [actualPageIndex, setActualPageIndex] = useState(1); //en que pagina estoy
-  const [TotalPages, setTotalPages] = useState(0); // manejador de paginas
-  const [ColSpanGrid, setColSpanGrid] = useState(1); // seteo si existe las columnas edit y delete
-  const [UniqueOrdering,setUniqueOrdering] = useState(false); // necesito ordenar los rows una sola vez.
+  const [Rows, setRows] = useState([]);
+  const [rowsPerPage, setRowsPerPage] = useState(props.RowPerPage);
+  const [actualPageIndex, setActualPageIndex] = useState(1);
+  const [TotalPages, setTotalPages] = useState(0);
+  const [UniqueOrdering, setUniqueOrdering] = useState(false);
+  const totalVisibleColumns = props.columns.length + (props.ShowDelete ? 1 : 0) + (props.ShowEdit ? 1 : 0);
 
   const handleExportar = e => {
     const doc = new jsPDF();
@@ -52,21 +52,18 @@ const RGrid = props => {
   };
 
   const ddlPages_OnChange = value => {
-    setRowsPerPage(value);
+    setRowsPerPage(Number(value));
+    setActualPageIndex(1);
   };
 
   const EnabledPaging = () => {
-    let b = false;
-    b = Rows.length > 0 && Rows.length < 9999 && rowsPerPage < 9999;
-    return b;
+    return Rows.length > 0 && rowsPerPage < 9999;
   };
 
   const PrevPage = () => {
-    let iPage = actualPageIndex;
     if (actualPageIndex > 1) {
-      iPage = iPage - 1;
+      setActualPageIndex(actualPageIndex - 1);
     }
-    setActualPageIndex(iPage);
   };
 
   const NextPage = () => {
@@ -74,107 +71,74 @@ const RGrid = props => {
       setActualPageIndex(actualPageIndex + 1);
     }
   };
-  
-  //Load
+
   const CalculatePages = useCallback(() => {
-    let cantidadFilas = 0;
-    let iTotal = 0;
-
     if (Rows.length === 0) {
-      return false;
+      setTotalPages(0);
+      return;
     }
-
-    cantidadFilas = Rows.length;
-
-    //siempre redondea agregando uno, si sobra.
-    iTotal = Math.ceil(cantidadFilas / rowsPerPage);
-
+    const iTotal = Math.ceil(Rows.length / rowsPerPage);
     setTotalPages(iTotal);
-  }, [Rows, rowsPerPage]);
-
-
-  Object.prototype.renameProperty = function (oldName, newName) {
-    // no hacer nada si los nombre son iguales
-    if (oldName === newName) {
-      return this;
+    if (actualPageIndex > iTotal && iTotal > 0) {
+      setActualPageIndex(iTotal);
+    } else if (actualPageIndex === 0 && iTotal > 0) {
+      setActualPageIndex(1);
     }
-    // Verificar si ya existe la propiedad con el nombre nuevo y evitar errores.
-    if (this.hasOwnProperty(oldName)) {
-      this[newName] = this[oldName];
-      //delete this[oldName]; // Elimina la columna que cambio, pero decidimos duplicarla.
-    }
-    return this;
-  };
+  }, [Rows, rowsPerPage, actualPageIndex]);
 
-const setColSpan = () => {
-
-  if (props.ShowDelete && props.ShowEdit)
-    {
-      setColSpanGrid(3);
-    }
-
-    if ( (props.ShowDelete === true && props.ShowEdit === false) || (props.ShowDelete === false && props.ShowEdit === true) )
-    {
-      setColSpanGrid(2);
-    }
-}
-
-  //necesitamos cambiar el Id por un Id conocido por el control.
-  const ChangeId = () => {
-    let oComplete;
-    try 
-    {
-
-      if (props.rows.length === 0 || UniqueOrdering) {
-        return;
+    const ChangeId = () => {
+      try {
+        if (props.rows.length === 0) {
+          setRows([]);
+          return;
+        }
+        const oComplete = props.rows.map((item, index) => { // Añadir 'index' como fallback
+          const rowIdValue = item[props.ConfigurationId];
+          let RowId;
+          if (rowIdValue === undefined || rowIdValue === null) {
+            console.warn(`ConfigurationId '${props.ConfigurationId}' not found or is null/undefined for row at index ${index}. Using fallback index as RowId.`);
+            RowId = `fallback-${index}`; // Generar un ID único basado en el índice
+          } else {
+            RowId = rowIdValue;
+          }
+          // Asegurarse de que el RowId se extraiga correctamente si existe
+          const { [props.ConfigurationId]: originalRowId, ...rest } = item;
+          return { RowId, ...rest };
+        });
+        setRows(lodash.sortBy(oComplete, 'RowId'));
+      } catch (e) {
+        console.error("Error in ChangeId:", e.message);
       }
+    };
 
-      setUniqueOrdering(true);
-      oComplete = props.rows;
-
-      for (var item of oComplete) {
-        item.renameProperty(props.ConfigurationId, 'RowId');
-      }
-
-    setRows(lodash.sortBy(oComplete, 'RowId'));
-    
-    } catch (e)
-    {
-      console.log(e.message);
-    }
-  };
-
-  const HandlerOrderby = (value, order) => {
-    setRows(lodash.sortBy(Rows, value), order);
+  const HandlerOrderby = (value) => {
+    setRows(lodash.sortBy(Rows, value));
   };
 
   useEffect(() => {
-
     ChangeId();
-    setColSpan();
-    
-  }, [props.rows]);
+  }, [props.rows, props.ConfigurationId]);
 
   useEffect(() => {
     CalculatePages();
   }, [Rows, rowsPerPage, CalculatePages]);
 
+  const paginatedRows = Rows.slice(
+    (actualPageIndex - 1) * rowsPerPage,
+    actualPageIndex * rowsPerPage
+  );
+
   return (
-    <div >
+    <div className="container-fluid p-0"> 
       {props.isLoading ? (
-        <h2>
-          <img
-            alt="imgLoading"
-            className="imgLoading"
-            title="Loading..."
-            border="0"
-            width="30px"
-            height="30px"
-            key={'kimgLoding' + Math.random().toString() }
-          ></img>
-        </h2>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+          <div className="spinner-border text-primary" role="status"> 
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <h2 className="ms-2 text-primary">Loading...</h2>
+        </div>
       ) : (
-        <React.Fragment>
+        <>
           {props?.Export && (
             <span key={'span' + Math.random().toString()}>
               <button value="csv" className="btn-2" onClick={handleExportar}>
@@ -188,121 +152,112 @@ const setColSpan = () => {
               </button>
             </span>
           )}
+          <div className="d-flex justify-content-between align-items-center mb-2 px-2"> 
 
-          <span align="right">
-            <select
-              value={rowsPerPage}
-              className="Select"
-              name="ddlPages"
-              id="ddlPages"
-              defaultValue="10"
-              key={'ddlPages' + Math.random().toString() }
-              onChange={e => ddlPages_OnChange(e.target.value)}
-            >
-              <option value="10"> 10 </option>
-              <option value="25"> 25 </option>
-              <option value="50"> 50 </option>
-              <option value="100"> 100 </option>
-              <option value="9999"> All </option>
-            </select>
-          </span>
+            {props.ShowPaging && (
+            <div className="d-flex align-items-center">
+              <label htmlFor="ddlPages" className="form-label me-1 mb-0 text-muted small">Rows per page:</label> 
+              <select
+                value={rowsPerPage}
+                className="form-select form-select-sm"
+                defaultValue="5"
+                name="ddlPages"
+                id="ddlPages"
+                key="ddlPages"
+                onChange={e => ddlPages_OnChange(e.target.value)}
+                style={{ width: 'auto' }}
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="9999">All</option>
+              </select>
+            </div>
+            )}
 
-          <table width={props?.TotalWidth} border="0" align="center" key={'tTittle' + Math.random().toString() } >
-            <tr className="TrTittle" key={'trTittle' + Math.random().toString() } >
-              <td className="TdTittle" align="center" key={'tdTittle' + Math.random().toString() } >
-                <a key={'aTittle' + Math.random().toString() } >{props.Tittle}</a>
-              </td>
-            </tr>
-          </table>
+          </div>
 
-          <table className="Table" key={'tgrid' + Math.random().toString() } width={props?.TotalWidth} align="center">
-          
-            <thead key={'thead' + Math.random().toString()}>
-              <tr key={'trHead' + Math.random().toString() }>
-                {props.columns.map((column, idx) => {
-                  return (
-                    <th className="TableCellBold" width={column.WidthColumn} key={'thHead' + idx }   >
-                      {column.Tittle}{' '}
-                      {column.Ordenable && (
-                          <img
-                            alt="imgSortingAsc"
-                            className="imgSortingAsc"
-                            key={'imgHead' + idx}
-                            title="Sort Asc"
-                            border="0"
-                            width="5px"
-                            height="5px"
-                            onClick={e => HandlerOrderby(column.ColumnOrdenable, 'asc')}
-                          ></img>
-                      )}
-                    </th>
-                  );
-                })}
+          <div className="card border-0 shadow-sm mb-3"> 
+            <div className="card-header bg-primary text-white text-center py-1"> 
+              <h5 className="mb-0">{props.Tittle}</h5> 
+            </div>
+            <div className="d-flex bg-dark text-white fw-bold py-0 px-0 small"> 
+              {props.columns.map((column, idx) => (
+                <div
+                  key={`header-col-${idx}`}
+                  className="p-1 text-truncate"
+                  style={{ width: column.WidthColumn || `${100 / totalVisibleColumns}%` }}
+                >
+                  {column.Tittle}{' '}
+                  {column.Ordenable && (
+                    <span
+                      className="ms-1"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => HandlerOrderby(column.ColumnOrdenable)}
+                      title="Sort Asc"
+                    >
+                      &#9650;
+                    </span>
+                  )}
+                </div>
+              ))}
 
-                {props.ShowDelete && (
-                  <th width="1%" className="TableCellBold" key={'thActionDelete' + Math.random().toString()}  >
-                    Delete
-                  </th>
-                )}
+              {props.ShowDelete && (
+                <div className="p-1 text-center" style={{ width: '60px' }}>
+                  
+                </div>
+              )}
 
-                {props.ShowEdit && (
-                  <th width="1%" className="TableCellBold" key={'thActionEdit' + Math.random().toString()}  >
-                    Edit
-                  </th>
-                )}
+              {props.ShowEdit && (
+                <div className="p-1 text-center" style={{ width: '60px' }}>
+                  
+                </div>
+              )}
+            </div>
 
-                { (props.ShowEdit || props.ShowDelete) && 
-                (
-                  <th width="1%" colSpan={ColSpanGrid} className="TableCellBold" key={'thActionSpace' + Math.random().toString()} >
-                  </th>
-                )}
+            <div className="list-group list-group-flush border-0"> {/* Eliminar borde del list-group */}
+              {paginatedRows.length > 0 ? (
+                paginatedRows.map((row, idx) => (
+                  <div
+                    key={`row-${row.RowId || idx}`}
+                    className="list-group-item list-group-item-action d-flex align-items-center py-1 px-2 border-0" /* Reducir padding y eliminar bordes */
+                  >
+                    {props.columns.map((column, colx) => (
+                      <div
+                        key={`cell-${row.RowId || idx}-${colx}`}
+                        className="p-1 text-truncate small" /* Reducir padding y tamaño de fuente */
+                        style={{ width: column.WidthColumn || `${100 / totalVisibleColumns}%` }}
+                      >
+                        {column.Selector(row)}
+                      </div>
+                    ))}
 
-              </tr>
-            </thead>
+                    {props.ShowDelete && (
+                      <div className="p-1 text-center" style={{ width: '60px' }}>
 
-            <tbody key={'tbody' + Math.random().toString() }  >
-
-              {Rows.map((row, idx) => {
-                if (
-                  idx < actualPageIndex * rowsPerPage + 1 &&
-                  idx >= actualPageIndex * rowsPerPage - rowsPerPage
-                ) {
-
-                  return (
-
-                    <tr key={'tr1' + Math.random().toString()  }>
-                    
-                      {props.columns.map((column, colx ) => {
-                        return (
-                          <td key={'td' + Math.random().toString() + colx.toString() } className="TableCell" width={column.WidthColumn}>
-                            {column.Selector(row)}
-                          </td>
-                        );
-                      })}
-
-                      {props.ShowDelete && (
-                        <td key={'td_delete' + Math.random().toString()} className="TableCellBold" align="center">
-                          <a key={'a_delete' + Math.random().toString()} href="#" onClick={() => props.DeleteId(row.RowId)}>
+                          <a key={'a_delete' + Math.random().toString()}  onClick={() => props.DeleteId(row.RowId)}>
                             <img
                               alt="imgDelete"
                               className="imgDelete"
-                              title="Next"
+                              title="Delete"
                               border="0"
                               width="18px"
                               height="18px"
                               key={'imgDelete' + Math.random().toString() }
                             ></img>
                           </a>
-                        </td>
-                      )}
+                      </div>
+                    )}
 
                     {props.ShowEdit && (
-                        <td key={'td_edit' + row.RowId.toString()} className="TableCellBold" align="center">
-                          <a key={'a_edit' + row.RowId.toString()} href='/#' onClick={() => props.EditId(row.RowId)}>
+                      <div className="p-1 text-center" style={{ width: '60px' }}>
+                       <a key={'a_edit' + row.RowId.toString()}  onClick={() => props.EditId(row.RowId)}>
                             <img
                               alt="imgEdit"
                               className="imgEdit"
-                              title="Next"
+                              title="Edit"
                               border="0"
                               width="18px"
                               height="18px"
@@ -310,60 +265,45 @@ const setColSpan = () => {
                               key={'imgEdit' + row.RowId.toString() }
                             ></img>
                           </a>
-                        </td>
-                    )}
-                    { (props.ShowEdit || props.ShowDelete ) && (
-                      <td width="1%" colSpan={ColSpanGrid} className="TableCellBold" key={'thActionSpace' + Math.random().toString()} >
-                      </td>
-                    )}
-                    </tr>
-                  );
-                }
-              })}
-            </tbody>
 
-            <tfoot >
-              <tr key={'tr' + Math.random().toString() } >
-                <td
-                  key={'tdFoot' + Math.random().toString() }
-                  align="right"
-                  colSpan={props.columns.length + ColSpanGrid }
-                  className="TableCellBold"
-                >
-                  {EnabledPaging && (
-                    <div key="DivFooter" className="DivFooter" >
-                      <a href="/#" onClick={PrevPage}>
-                        <img
-                          alt="imgPrev"
-                          key={'imgPrev' + Math.random().toString() }
-                          className="imgPrev"
-                          title="Next"
-                          border="0"
-                          width="18px"
-                          height="18px"
-                        ></img>
-                      </a>
-                      <a>
-                        {' '} Page {actualPageIndex} / {TotalPages}{' '}
-                      </a>
-                      <a href="/#" onClick={NextPage}>
-                        <img
-                          alt="imgNext"
-                          key={'imgNext' + Math.random().toString()}
-                          className="imgNext"
-                          title="Next"
-                          border="0"
-                          width="18px"
-                          height="18px"
-                        ></img>
-                      </a>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </React.Fragment>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="list-group-item text-center py-1"> 
+                  No data available.
+                </div>
+              )}
+            </div>
+
+            <div className="d-flex justify-content-end py-1 px-1"> 
+              {EnabledPaging() && (
+                <nav aria-label="Page navigation">
+                  <ul className="pagination pagination-sm justify-content-end mb-0"> 
+                    <li className={`page-item ${actualPageIndex === 1 ? 'disabled' : ''}`}>
+
+                      <button className="page-link" onClick={PrevPage} disabled={actualPageIndex === 1}>
+                        Previous Page
+                      </button>
+
+                    </li>
+                    <li className="page-item disabled">
+                      <span className="page-link text-muted"> 
+                        Page {actualPageIndex} / {TotalPages}
+                      </span>
+                    </li>
+                    <li className={`page-item ${actualPageIndex === TotalPages ? 'disabled' : ''}`}>
+                      <button className="page-link" onClick={NextPage} disabled={actualPageIndex === TotalPages}>
+                        Next Page
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

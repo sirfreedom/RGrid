@@ -1,11 +1,8 @@
-import './Css/App.css';
-import 'bootstrap/dist/css/bootstrap.css';
-import React, {useState,useEffect} from 'react';
+import {useState,useEffect} from 'react';
 import RGrid from './Components/RGridBoostrap'
 import {ListAll} from './Components/Helpers'
 import ModalEdicion from './Components/ModalEdicion';
 import ModalNew from './Components/ModalNew';
-
 
 const GrillaConfiguracion = [
   {

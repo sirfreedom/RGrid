@@ -1,3 +1,4 @@
+import '../Css/RGrid.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useCallback, useState, useEffect } from 'react';
 import exportFromJSON from 'export-from-json';
@@ -87,21 +88,30 @@ const RGridBoostrap = props => {
     }
   }, [Rows, rowsPerPage, actualPageIndex]);
 
-  const ChangeId = () => {
-    try {
-      if (props.rows.length === 0 || UniqueOrdering) {
-        return;
+    const ChangeId = () => {
+      try {
+        if (props.rows.length === 0) {
+          setRows([]);
+          return;
+        }
+        const oComplete = props.rows.map((item, index) => { // A�adir 'index' como fallback
+          const rowIdValue = item[props.ConfigurationId];
+          let RowId;
+          if (rowIdValue === undefined || rowIdValue === null) {
+            console.warn(`ConfigurationId '${props.ConfigurationId}' not found or is null/undefined for row at index ${index}. Using fallback index as RowId.`);
+            RowId = `fallback-${index}`; // Generar un ID �nico basado en el �ndice
+          } else {
+            RowId = rowIdValue;
+          }
+          // Asegurarse de que el RowId se extraiga correctamente si existe
+          const { [props.ConfigurationId]: originalRowId, ...rest } = item;
+          return { RowId, ...rest };
+        });
+        setRows(lodash.sortBy(oComplete, 'RowId'));
+      } catch (e) {
+        console.error("Error in ChangeId:", e.message);
       }
-      setUniqueOrdering(true);
-      const oComplete = props.rows.map(item => {
-        const { [props.ConfigurationId]: RowId, ...rest } = item;
-        return { RowId, ...rest };
-      });
-      setRows(lodash.sortBy(oComplete, 'RowId'));
-    } catch (e) {
-      console.error("Error in ChangeId:", e.message);
-    }
-  };
+    };
 
   const HandlerOrderby = (value) => {
     setRows(lodash.sortBy(Rows, value));
@@ -146,14 +156,16 @@ const RGridBoostrap = props => {
               </div>
             )}
 
+            {props.ShowPaging && (
             <div className="d-flex align-items-center">
               <label htmlFor="ddlPages" className="form-label me-1 mb-0 text-muted small">Rows per page:</label> 
               <select
                 value={rowsPerPage}
                 className="form-select form-select-sm"
+                defaultValue="5"
                 name="ddlPages"
                 id="ddlPages"
-                defaultValue="5"
+                key="ddlPages"
                 onChange={e => ddlPages_OnChange(e.target.value)}
                 style={{ width: 'auto' }}
               >
@@ -165,6 +177,8 @@ const RGridBoostrap = props => {
                 <option value="9999">All</option>
               </select>
             </div>
+            )}
+
           </div>
 
           <div className="card border-0 shadow-sm mb-3"> 
@@ -194,13 +208,13 @@ const RGridBoostrap = props => {
 
               {props.ShowDelete && (
                 <div className="p-1 text-center" style={{ width: '60px' }}>
-                  Delete
+                  
                 </div>
               )}
 
               {props.ShowEdit && (
                 <div className="p-1 text-center" style={{ width: '60px' }}>
-                  Edit
+                  
                 </div>
               )}
             </div>
@@ -215,7 +229,7 @@ const RGridBoostrap = props => {
                     {props.columns.map((column, colx) => (
                       <div
                         key={`cell-${row.RowId || idx}-${colx}`}
-                        className="p-1 text-truncate small" /* Reducir padding y tamaño de fuente */
+                        className="p-1 text-truncate small" /* Reducir padding y tama�o de fuente */
                         style={{ width: column.WidthColumn || `${100 / totalVisibleColumns}%` }}
                       >
                         {column.Selector(row)}
@@ -224,25 +238,36 @@ const RGridBoostrap = props => {
 
                     {props.ShowDelete && (
                       <div className="p-1 text-center" style={{ width: '60px' }}>
-                        <button
-                          className="btn btn-sm btn-danger py-1 px-1" 
-                          onClick={() => props.DeleteId(row.RowId)}
-                          title="Delete"
-                        >
-                        Delete
-                        </button>
+
+                          <a key={'a_delete' + Math.random().toString()}  onClick={() => props.DeleteId(row.RowId)}>
+                            <img
+                              alt="imgDelete"
+                              className="imgDelete"
+                              title="Delete"
+                              border="0"
+                              width="18px"
+                              height="18px"
+                              key={'imgDelete' + Math.random().toString() }
+                            ></img>
+                          </a>
                       </div>
                     )}
 
                     {props.ShowEdit && (
                       <div className="p-1 text-center" style={{ width: '60px' }}>
-                        <button
-                          className="btn btn-sm btn-warning py-1 px-1" 
-                          onClick={() => props.EditId(row.RowId)}
-                          title="Edit"
-                        >
-                          Edit
-                        </button>
+                       <a key={'a_edit' + row.RowId.toString()}  onClick={() => props.EditId(row.RowId)}>
+                            <img
+                              alt="imgEdit"
+                              className="imgEdit"
+                              title="Edit"
+                              border="0"
+                              width="18px"
+                              height="18px"
+                              value={row.RowId}
+                              key={'imgEdit' + row.RowId.toString() }
+                            ></img>
+                          </a>
+
                       </div>
                     )}
                   </div>
@@ -259,9 +284,11 @@ const RGridBoostrap = props => {
                 <nav aria-label="Page navigation">
                   <ul className="pagination pagination-sm justify-content-end mb-0"> 
                     <li className={`page-item ${actualPageIndex === 1 ? 'disabled' : ''}`}>
+
                       <button className="page-link" onClick={PrevPage} disabled={actualPageIndex === 1}>
                         Previous Page
                       </button>
+
                     </li>
                     <li className="page-item disabled">
                       <span className="page-link text-muted"> 
