@@ -88,8 +88,19 @@ const RGridBoostrap = props => {
     }
   }, [Rows, rowsPerPage, actualPageIndex]);
 
+
+
+
+
+
     const ChangeId = () => {
       try {
+      // Verificación robusta: ¿Existe? ¿Es un array? ¿Tiene datos?
+      if (!props.rows || !Array.isArray(props.rows) || props.rows.length === 0) {
+        setRows([]);
+        return;
+      }
+
         if (props.rows.length === 0) {
           setRows([]);
           return;

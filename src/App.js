@@ -1,5 +1,5 @@
 import {useState,useEffect} from 'react';
-import RGrid from './Components/RGridBoostrap'
+import RGrid from './Components/RGridBoostrap';
 import {ListAll} from './Components/Helpers'
 import ModalEdicion from './Components/ModalEdicion';
 import ModalNew from './Components/ModalNew';
@@ -7,21 +7,21 @@ import ModalNew from './Components/ModalNew';
 const GrillaConfiguracion = [
   {
     Tittle: 'Nombre',
-    Selector: fila => fila.name,
+    Selector: fila => fila.attributes.name,
     WidthColumn: '40%',
     Ordenable: true,
     ColumnOrdenable: 'name',
   },
   {
-    Tittle: 'Grupo',
-    Selector: fila => fila.breed_group,
+    Tittle: 'Descripcion',
+    Selector: fila => fila.attributes.description,
     WidthColumn: '40%',
     Ordenable: true,
-    ColumnOrdenable: 'breed_group'
+    ColumnOrdenable: 'description'
   },
   {
-    Tittle: 'Vida Promedio',
-    Selector: fila => fila.life_span,
+    Tittle: 'Tipo',
+    Selector: fila => fila.type,
     WidthColumn: '20%',
   },
 ];
@@ -35,7 +35,10 @@ function App() {
 
   useEffect(() => {
     ListAll().then(lDog => {
+      
+      console.log(lDog);
       setDogs(lDog);
+
     });
   }, []);
 

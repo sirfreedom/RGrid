@@ -14,12 +14,14 @@ export const GetDog = async id => {
 };
 
 export const FindDogs = async value => {
-  let url = 'https://api.thecatapi.com/v1/breeds/search?q=' + value;
+  let url = 'https://dogapi.dog/api/v2/breeds/search?q=' + value;
   let res;
   let data = [];
+  let tempdata = [];
   try {
   res = await fetch(url);
-  data = await res.json().catch(err => console.log(err));
+  tempdata = await res.json().catch(err => console.log(err));
+  data = tempdata.data;
   }
   catch(ex){
     console.log(ex);
@@ -44,12 +46,14 @@ export const InsertComment = () =>
 
 
   export const ListAll = async () => {
-    const url = 'https://api.thedogapi.com/v1/breeds';
+    const url = 'https://dogapi.dog/api/v2/breeds';
     let data = [];
-    let res;
+    let tempdata = [];
+    let response;
     try{
-    res = await fetch(url);
-    data = await res.json().catch(err => console.log(err));
+    response = await fetch(url);
+    tempdata = await response.json().catch(err => console.log(err));
+    data = tempdata.data;
     }
     catch(ex){
       console.log(ex);
